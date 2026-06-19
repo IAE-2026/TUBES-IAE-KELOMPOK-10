@@ -1,0 +1,42 @@
+"A date string with format `Y-m-d`, e.g. `2025-05-15`."
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2025-05-15 13:00:00`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+type Attendance {
+    id: ID!
+    employee_id: String!
+    date: Date!
+    status: AttendanceStatus!
+    note: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+enum AttendanceStatus {
+    hadir
+    izin
+    sakit
+    alpha
+}
+
+type Query {
+    "Get all attendance records, with optional filters."
+    attendances(
+        "Filter by employee ID"
+        employee_id: String
+        "Filter from this date (YYYY-MM-DD)"
+        start_date: Date
+        "Filter to this date (YYYY-MM-DD)"
+        end_date: Date
+        "Filter by attendance status"
+        status: AttendanceStatus
+    ): [Attendance!]! @field(resolver: "App\\GraphQL\\Queries\\AttendanceQuery")
+
+    "Get a single attendance record by ID."
+    attendance(id: ID! @eq): Attendance @find
+
+    "Get all attendances for a specific employee."
+    attendancesByEmployee(employee_id: String! @eq): [Attendance!]! @all
+}

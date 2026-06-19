@@ -1,0 +1,165 @@
+{
+  "info": {
+    "name": "Absensi Service - Tugas 3 IAE",
+    "_postman_id": "102022400074-absensi-tugas-3",
+    "description": "Collection untuk cek SSO, JWT, SOAP Audit, dan RabbitMQ publish pada Absensi Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "absensi_base_url", "value": "http://localhost:8002" },
+    { "key": "central_base_url", "value": "https://iae-sso.virtualfri.id" },
+    { "key": "user_email", "value": "warga24@ktp.iae.id" },
+    { "key": "user_password", "value": "KtpDigital2026!" },
+    { "key": "central_api_key", "value": "KEY-MHS-149" },
+    { "key": "jwt_token", "value": "" },
+    { "key": "m2m_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Central Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{central_base_url}}/health",
+          "host": ["{{central_base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "2. Login SSO via Absensi Service",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.token) {",
+              "  pm.collectionVariables.set('jwt_token', json.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{absensi_base_url}}/api/v1/tugas-3/sso/login",
+          "host": ["{{absensi_base_url}}"],
+          "path": ["api", "v1", "tugas-3", "sso", "login"]
+        }
+      }
+    },
+    {
+      "name": "3. Create Critical Attendance - SSO + SOAP + RabbitMQ",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"employee_id\": \"EMP-001\",\n  \"date\": \"2026-06-12\",\n  \"status\": \"hadir\",\n  \"note\": \"Masuk tepat waktu\"\n}"
+        },
+        "url": {
+          "raw": "{{absensi_base_url}}/api/v1/tugas-3/attendances",
+          "host": ["{{absensi_base_url}}"],
+          "path": ["api", "v1", "tugas-3", "attendances"]
+        }
+      }
+    },
+    {
+      "name": "4. Direct M2M Token - Central SSO",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.token) {",
+              "  pm.collectionVariables.set('m2m_token', json.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"api_key\": \"{{central_api_key}}\"\n}"
+        },
+        "url": {
+          "raw": "{{central_base_url}}/api/v1/auth/token",
+          "host": ["{{central_base_url}}"],
+          "path": ["api", "v1", "auth", "token"]
+        }
+      }
+    },
+    {
+      "name": "5. Direct SOAP Audit Sample",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{m2m_token}}" },
+          { "key": "Content-Type", "value": "text/xml; charset=UTF-8" },
+          { "key": "Accept", "value": "text/xml" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:iae=\"http://iae.central/audit\">\n  <soap:Body>\n    <iae:AuditRequest>\n      <iae:TeamID>TEAM-10</iae:TeamID>\n      <iae:ActivityName>AttendancePostmanCheck</iae:ActivityName>\n      <iae:LogContent><![CDATA[{\"service\":\"Absensi-Service\",\"check\":\"postman-soap\"}]]></iae:LogContent>\n    </iae:AuditRequest>\n  </soap:Body>\n</soap:Envelope>"
+        },
+        "url": {
+          "raw": "{{central_base_url}}/soap/v1/audit",
+          "host": ["{{central_base_url}}"],
+          "path": ["soap", "v1", "audit"]
+        }
+      }
+    },
+    {
+      "name": "6. Direct RabbitMQ Publish Sample",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{m2m_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange\": \"iae.central.exchange\",\n  \"routing_key\": \"absensi.attendance.postman_check\",\n  \"payload\": {\n    \"event_type\": \"attendance.postman_check\",\n    \"service\": \"Absensi-Service\",\n    \"team_id\": \"TEAM-10\",\n    \"message\": \"Cek publish RabbitMQ dari Postman\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{central_base_url}}/api/v1/messages/publish",
+          "host": ["{{central_base_url}}"],
+          "path": ["api", "v1", "messages", "publish"]
+        }
+      }
+    },
+    {
+      "name": "7. RabbitMQ Board",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{central_base_url}}/board",
+          "host": ["{{central_base_url}}"],
+          "path": ["board"]
+        }
+      }
+    }
+  ]
+}

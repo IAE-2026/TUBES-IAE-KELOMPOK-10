@@ -1,0 +1,27 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Absensi Service API",
+        "description": "Service untuk manajemen data absensi karyawan. Bagian dari ekosistem IAE Penggajian Karyawan.",
+        "contact": {
+            "email": "102022400074@telkomuniversity.ac.id"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Absensi Service"
+        }
+    ],
+    "paths": {},
+    "components": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-IAE-KEY"
+            }
+        }
+    }
+}

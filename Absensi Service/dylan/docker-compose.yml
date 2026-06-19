@@ -1,0 +1,72 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: absensi-service
+    restart: unless-stopped
+    ports:
+      - "8002:80"
+    environment:
+      APP_NAME: "Absensi-Service"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8002
+      DB_CONNECTION: pgsql
+      DB_HOST: absensi-db
+      DB_PORT: 5432
+      DB_DATABASE: absensi_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: secret
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      IAE_API_KEY: "102022400074"
+      # Employee Service Dimas — container name: employee-service, port internal: 8000
+      EMPLOYEE_SERVICE_URL: ${EMPLOYEE_SERVICE_URL:-http://employee-service:8000}
+      EMPLOYEE_SERVICE_KEY: ${EMPLOYEE_SERVICE_KEY:-102022400197}
+      L5_SWAGGER_GENERATE_ALWAYS: "false"
+      IAE_CENTRAL_BASE_URL: ${IAE_CENTRAL_BASE_URL:-https://iae-sso.virtualfri.id}
+      IAE_CENTRAL_API_KEY: ${IAE_CENTRAL_API_KEY:-KEY-MHS-149}
+      IAE_NIM: ${IAE_NIM:-102022400074}
+      IAE_TEAM_ID: ${IAE_TEAM_ID:-TEAM-10}
+      IAE_SERVICE_NAME: ${IAE_SERVICE_NAME:-Absensi-Service}
+      IAE_JWT_ISSUER: ${IAE_JWT_ISSUER:-iae-central-mock}
+      IAE_RABBIT_EXCHANGE: ${IAE_RABBIT_EXCHANGE:-iae.central.exchange}
+      IAE_ATTENDANCE_RECORDED_ROUTING_KEY: ${IAE_ATTENDANCE_RECORDED_ROUTING_KEY:-absensi.attendance.recorded}
+    depends_on:
+      absensi-db:
+        condition: service_healthy
+    networks:
+      - absensi-network
+      - payroll-network   # shared network dengan Employee Service Dimas
+
+  absensi-db:
+    image: postgres:15-alpine
+    container_name: absensi-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: absensi_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - absensi_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d absensi_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - absensi-network
+
+volumes:
+  absensi_db_data:
+
+networks:
+  absensi-network:
+    driver: bridge
+  payroll-network:
+    external: true
+    name: payroll-network
