@@ -1,0 +1,20 @@
+type PayrollSlip {
+    id: ID!
+    nip: String!
+    employee_name: String!
+    tahun: Int!
+    bulan: Int!
+    gaji_pokok: Float!
+    tunjangan_tetap: Float!
+    jumlah_hadir: Int!
+    jumlah_izin: Int!
+    jumlah_sakit: Int!
+    jumlah_alpha: Int!
+    potongan_absensi: Float!
+    total_gaji: Float!
+    status: String!
+}
+
+type Query {
+    payrollSlips: [PayrollSlip!]! @all(model: "App\\Models\\PayrollSlip")
+}

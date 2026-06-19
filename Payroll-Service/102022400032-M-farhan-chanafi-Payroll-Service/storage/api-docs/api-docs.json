@@ -1,0 +1,193 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Payroll Service API",
+        "description": "Dokumentasi API untuk Payroll Service pada tugas IAE",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/payroll-slips": {
+            "get": {
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Menampilkan seluruh slip gaji",
+                "operationId": "17c09b6572bb0f61b43918f31c82cf82",
+                "responses": {
+                    "200": {
+                        "description": "Payroll slips retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "iaeKey": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payroll-slips/{nip}/{tahun}/{bulan}": {
+            "get": {
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Menampilkan detail slip gaji berdasarkan NIP, tahun, dan bulan",
+                "operationId": "1fc7e027201189ba9d4205f398ac5177",
+                "parameters": [
+                    {
+                        "name": "nip",
+                        "in": "path",
+                        "description": "NIP karyawan",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "EMP001"
+                        }
+                    },
+                    {
+                        "name": "tahun",
+                        "in": "path",
+                        "description": "Tahun penggajian",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    },
+                    {
+                        "name": "bulan",
+                        "in": "path",
+                        "description": "Bulan penggajian",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payroll slip retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Payroll slip not found"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "iaeKey": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payroll-runs": {
+            "post": {
+                "tags": [
+                    "Payroll"
+                ],
+                "summary": "Menjalankan proses payroll bulanan",
+                "operationId": "a1e3db4a9a041fd700d91803db62f29d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nip",
+                                    "employee_name",
+                                    "tahun",
+                                    "bulan",
+                                    "gaji_pokok",
+                                    "tunjangan_tetap",
+                                    "jumlah_hadir",
+                                    "jumlah_izin",
+                                    "jumlah_sakit",
+                                    "jumlah_alpha"
+                                ],
+                                "properties": {
+                                    "nip": {
+                                        "type": "string",
+                                        "example": "EMP001"
+                                    },
+                                    "employee_name": {
+                                        "type": "string",
+                                        "example": "Farhan Chanafi"
+                                    },
+                                    "tahun": {
+                                        "type": "integer",
+                                        "example": 2026
+                                    },
+                                    "bulan": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "gaji_pokok": {
+                                        "type": "number",
+                                        "example": 5000000
+                                    },
+                                    "tunjangan_tetap": {
+                                        "type": "number",
+                                        "example": 1000000
+                                    },
+                                    "jumlah_hadir": {
+                                        "type": "integer",
+                                        "example": 20
+                                    },
+                                    "jumlah_izin": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "jumlah_sakit": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "jumlah_alpha": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Payroll processed successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "iaeKey": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "iaeKey": {
+                "type": "apiKey",
+                "name": "X-IAE-KEY",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Payroll",
+            "description": "Payroll"
+        }
+    ]
+}

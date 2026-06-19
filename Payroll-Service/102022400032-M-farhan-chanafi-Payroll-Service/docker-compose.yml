@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payroll-service
+    ports:
+      - "8003:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/app/database/database.sqlite
+      - IAE_KEY=102022400032
+      - EMPLOYEE_SERVICE_URL=http://employee-service:8000
+      - EMPLOYEE_SERVICE_KEY=102022400197
+      - ABSENSI_SERVICE_URL=http://absensi-service:80
+      - ABSENSI_SERVICE_KEY=102022400074
+      - IAE_CLOUD_URL=https://iae-sso.virtualfri.id
+      - IAE_CLOUD_API_KEY=KEY-MHS-116
+      - TEAM_ID=TEAM-10
+    networks:
+      - payroll-network
+
+networks:
+  payroll-network:
+    external: true
+    name: payroll-network
