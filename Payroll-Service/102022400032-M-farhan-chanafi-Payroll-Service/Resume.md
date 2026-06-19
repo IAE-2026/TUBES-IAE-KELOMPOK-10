@@ -29,14 +29,3 @@ Setiap proses payroll yang selesai dikirim sebagai audit ke sistem SOAP pusat, d
 Setelah audit berhasil, event payroll.processed dipublish ke RabbitMQ pusat lengkap dengan team_id, supaya event tersebut tercatat sebagai milik kelompok di board RabbitMQ dosen.
 Sempat ada bug di mana kode integrasi SSO/SOAP/RabbitMQ tertulis setelah statement return, sehingga tidak pernah benar-benar dijalankan. Setelah ditemukan, urutan kodenya diperbaiki sampai seluruh alur berjalan dari awal hingga akhir.
 Response akhir dari payroll-runs dilengkapi data sources (data Employee Service dan Absensi Service yang dipakai untuk perhitungan) dan cloud_integration (status SSO, SOAP, RabbitMQ), supaya satu transaksi bisa langsung diverifikasi sudah melewati seluruh rantai integrasi atau belum.
-
-3. Pengujian End-to-End
-
-Alur lengkap diuji mulai dari pembuatan data karyawan baru di Employee Service, pencatatan absensinya di Absensi Service, sampai penerbitan slip gajinya di Payroll Service. Ketiga proses tersebut dipastikan memunculkan audit SOAP dan tercatat di board RabbitMQ dosen dengan label tim (TEAM-10). Dokumentasi API kedua service juga dilengkapi Swagger/OpenAPI, sehingga endpoint, parameter, dan contoh response bisa dicek tanpa harus membaca kode satu per satu.
-
-4. Kendala yang Dihadapi
-
-Format base64url pada JWT berbeda dari base64 standar, sehingga verifikasi token sempat gagal sebelum konversi karakter dan padding-nya diperbaiki.
-Koneksi dari container Docker ke server SSO dosen sempat timeout, padahal server pusatnya aktif — ternyata penyebabnya ada di konfigurasi jaringan Docker.
-Format body untuk publish RabbitMQ sempat tidak sesuai spesifikasi dosen, sehingga event gagal masuk ke exchange sebelum strukturnya disesuaikan.
-Bug logika: kode integrasi sempat diletakkan setelah return di Payroll Service, sehingga SSO, SOAP Audit, dan RabbitMQ tidak ikut berjalan meskipun payroll tetap tersimpan.
